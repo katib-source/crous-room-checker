@@ -46,11 +46,13 @@ python setup.py
 ### 3. Set Up Telegram Bot
 
 #### Create a Bot:
+
 1. Open Telegram and search for `@BotFather`
 2. Send `/newbot` and follow the instructions
 3. Save your bot token (format: `123456789:ABCdefGHIjklMNOpqrsTUVwxyz`)
 
 #### Get Your Chat ID:
+
 1. Search for `@userinfobot` on Telegram
 2. Start a chat and send any message
 3. Copy your Chat ID (format: `123456789`)
@@ -65,15 +67,15 @@ Edit `config.json` with your credentials:
 
 ```json
 {
-    "telegram": {
-        "bot_token": "YOUR_BOT_TOKEN_HERE",
-        "chat_id": "YOUR_CHAT_ID_HERE"
-    },
-    "settings": {
-        "check_interval_minutes": 5,
-        "use_simulation": false,
-        "log_level": "INFO"
-    }
+  "telegram": {
+    "bot_token": "YOUR_BOT_TOKEN_HERE",
+    "chat_id": "YOUR_CHAT_ID_HERE"
+  },
+  "settings": {
+    "check_interval_minutes": 5,
+    "use_simulation": false,
+    "log_level": "INFO"
+  }
 }
 ```
 
@@ -165,6 +167,7 @@ Set `"log_level": "DEBUG"` in config.json for detailed logging.
 ## 📝 Logs
 
 The application creates detailed logs in `crous_checker.log` including:
+
 - Check attempts and results
 - Rooms found and notifications sent
 - Error messages and recovery attempts

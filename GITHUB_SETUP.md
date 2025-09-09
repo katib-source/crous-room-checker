@@ -81,12 +81,14 @@ crous-room-checker/
 ## 🔒 Security Check
 
 **✅ Make sure these files are NOT on GitHub:**
+
 - `config.json` (contains your bot token and chat ID)
 - `*.log` files
 - `.venv/` folder
 - `__pycache__/` folder
 
 **✅ These SHOULD be on GitHub:**
+
 - `config_sample.json` (template without real credentials)
 - All `.py` files
 - `requirements.txt`
@@ -136,14 +138,17 @@ git push --tags
 ## 📞 Common Issues
 
 ### Authentication Error:
+
 - Use **Personal Access Token** instead of password
 - Go to GitHub Settings → Developer settings → Personal access tokens
 
 ### Permission Denied:
+
 - Check repository visibility settings
 - Ensure you're the owner or have write access
 
 ### Large Files Warning:
+
 - Files over 100MB need Git LFS
 - Consider excluding large files in .gitignore
 
