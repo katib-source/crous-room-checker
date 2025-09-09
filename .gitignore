@@ -14,6 +14,7 @@ crous_checker.log
 venv/
 env/
 .env
+.venv/
 
 # IDE files
 .vscode/
@@ -28,3 +29,8 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Render specific (keep these files for deployment)
+# runtime.txt - INCLUDE
+# Procfile - INCLUDE
+# crous-checker-cloud.py - INCLUDE
