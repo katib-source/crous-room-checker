@@ -1,15 +1,15 @@
 {
-    "telegram": {
-        "bot_token": "YOUR_BOT_TOKEN_HERE",
-        "chat_ids": [
-            "YOUR_CHAT_ID_HERE",
-            "FRIEND_CHAT_ID_HERE",
-            "ANOTHER_FRIEND_CHAT_ID_HERE"
-        ]
-    },
-    "settings": {
-        "check_interval_minutes": 5,
-        "use_simulation": true,
-        "log_level": "INFO"
-    }
+  "telegram": {
+    "bot_token": "YOUR_BOT_TOKEN_HERE",
+    "chat_ids": [
+      "YOUR_CHAT_ID_HERE",
+      "FRIEND_CHAT_ID_HERE",
+      "ANOTHER_FRIEND_CHAT_ID_HERE"
+    ]
+  },
+  "settings": {
+    "check_interval_minutes": 5,
+    "use_simulation": true,
+    "log_level": "INFO"
+  }
 }
