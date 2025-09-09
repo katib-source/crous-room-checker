@@ -47,17 +47,20 @@ git push origin main
 4. **Configure the service**:
 
 #### Basic Settings:
+
 - **Name**: `crous-room-checker`
 - **Environment**: `Python 3`
 - **Region**: `Frankfurt` (closest to France)
 - **Branch**: `main`
 
 #### Build Settings:
+
 - **Root Directory**: Leave empty
 - **Build Command**: `pip install -r requirements.txt`
 - **Start Command**: `python crous-checker.py`
 
 #### Advanced Settings:
+
 - **Auto-Deploy**: `Yes` (deploys automatically on GitHub push)
 
 ### 4. Set Environment Variables
@@ -66,12 +69,12 @@ In Render dashboard, go to your service → **Environment** tab:
 
 **Add these environment variables:**
 
-| Key | Value |
-|-----|-------|
-| `TELEGRAM_BOT_TOKEN` | `8465766993:AAGpWR_LPuCFtEq3RdmvO733x3O7bOAwg2A` |
-| `TELEGRAM_CHAT_ID` | `7391538221` |
-| `CHECK_INTERVAL_MINUTES` | `5` |
-| `PYTHON_VERSION` | `3.11.0` |
+| Key                      | Value                                            |
+| ------------------------ | ------------------------------------------------ |
+| `TELEGRAM_BOT_TOKEN`     | `8465766993:AAGpWR_LPuCFtEq3RdmvO733x3O7bOAwg2A` |
+| `TELEGRAM_CHAT_ID`       | `7391538221`                                     |
+| `CHECK_INTERVAL_MINUTES` | `5`                                              |
+| `PYTHON_VERSION`         | `3.11.0`                                         |
 
 ⚠️ **Important**: Use environment variables instead of config.json for security!
 
@@ -103,16 +106,19 @@ In Render dashboard, go to your service → **Environment** tab:
 ## 🔍 Monitoring Your Service
 
 ### 1. Render Dashboard
+
 - **View logs**: See real-time application logs
 - **Check metrics**: CPU, memory usage
 - **Service status**: Running/stopped/error states
 
 ### 2. Telegram Notifications
+
 - **Startup message**: Confirms service is running
 - **Room alerts**: When accommodations are found
 - **Error messages**: If something goes wrong
 
 ### 3. Log Messages to Watch For:
+
 ```
 ✅ "Bot initialized successfully!"
 ✅ "Checking CROUS room availability..."
@@ -133,15 +139,19 @@ In Render dashboard, go to your service → **Environment** tab:
 ### Common Issues:
 
 #### 1. Service Won't Start
+
 **Solution**: Check environment variables are set correctly
 
 #### 2. No Telegram Notifications
+
 **Solution**: Verify bot token and chat ID in environment variables
 
 #### 3. Service Sleeps Too Often
+
 **Solution**: Consider upgrading to paid plan for always-on service
 
 #### 4. Python Version Error
+
 **Solution**: Ensure `runtime.txt` specifies Python 3.11.0
 
 ### Debug Steps:
@@ -154,6 +164,7 @@ In Render dashboard, go to your service → **Environment** tab:
 ## ⚡ Advanced Features
 
 ### Auto-Wake Service
+
 ```python
 # Add to your script to prevent sleeping
 import os
@@ -172,6 +183,7 @@ def keep_alive():
 ```
 
 ### Custom Domain (Paid Plans)
+
 - Add custom domain in Render dashboard
 - Configure DNS records
 - Automatic SSL certificates
@@ -198,14 +210,17 @@ def keep_alive():
 ## 📱 Managing Your Service
 
 ### Update Configuration:
+
 - **Change environment variables** in Render dashboard
 - **Service restarts automatically** when changed
 
 ### Update Code:
+
 - **Push to GitHub** → **Auto-deploys to Render**
 - **Check logs** for successful deployment
 
 ### Stop Service:
+
 - **Suspend in Render dashboard**
 - **Receives shutdown notification** on Telegram
 
@@ -213,7 +228,7 @@ def keep_alive():
 
 ## 🎉 Congratulations!
 
-Your CROUS room checker is now running 24/7 in the cloud! 
+Your CROUS room checker is now running 24/7 in the cloud!
 
 **Service URL**: `https://crous-room-checker-[random].onrender.com`
 

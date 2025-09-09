@@ -26,29 +26,38 @@ logger = logging.getLogger(__name__)
 class TelegramBot:
     """Handle Telegram bot notifications"""
     
-    def __init__(self, bot_token: str, chat_id: str):
+    def __init__(self, bot_token: str, chat_ids: list):
         self.bot_token = bot_token
-        self.chat_id = chat_id
+        self.chat_ids = chat_ids if isinstance(chat_ids, list) else [chat_ids]
         self.base_url = f"https://api.telegram.org/bot{bot_token}"
     
     def send_message(self, message: str) -> bool:
-        """Send a message via Telegram bot"""
-        try:
-            url = f"{self.base_url}/sendMessage"
-            payload = {
-                'chat_id': self.chat_id,
-                'text': message,
-                'parse_mode': 'HTML'
-            }
-            
-            response = requests.post(url, json=payload, timeout=10)
-            response.raise_for_status()
-            
-            logger.info("Telegram notification sent successfully")
+        """Send a message to all configured chat IDs"""
+        success_count = 0
+        
+        for chat_id in self.chat_ids:
+            try:
+                url = f"{self.base_url}/sendMessage"
+                payload = {
+                    'chat_id': chat_id,
+                    'text': message,
+                    'parse_mode': 'HTML'
+                }
+                
+                response = requests.post(url, json=payload, timeout=10)
+                response.raise_for_status()
+                
+                logger.info(f"Telegram notification sent successfully to {chat_id}")
+                success_count += 1
+                
+            except requests.exceptions.RequestException as e:
+                logger.error(f"Failed to send Telegram message to {chat_id}: {e}")
+        
+        if success_count > 0:
+            logger.info(f"Message sent to {success_count}/{len(self.chat_ids)} recipients")
             return True
-            
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to send Telegram message: {e}")
+        else:
+            logger.error("Failed to send message to any recipient")
             return False
 
 class CrousChecker:
@@ -331,15 +340,25 @@ def load_config() -> Dict[str, Any]:
     
     # Try to load from environment variables first (for cloud deployment)
     bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
-    chat_id = os.getenv('TELEGRAM_CHAT_ID')
+    chat_ids_env = os.getenv('TELEGRAM_CHAT_IDS')  # Comma-separated list
+    chat_id_single = os.getenv('TELEGRAM_CHAT_ID')  # Single chat ID (backward compatibility)
     check_interval = os.getenv('CHECK_INTERVAL_MINUTES', '5')
     
-    if bot_token and chat_id:
-        logger.info("Loading configuration from environment variables")
+    # Parse chat IDs
+    chat_ids = []
+    if chat_ids_env:
+        # Multiple chat IDs from TELEGRAM_CHAT_IDS (comma-separated)
+        chat_ids = [id.strip() for id in chat_ids_env.split(',') if id.strip()]
+    elif chat_id_single:
+        # Single chat ID from TELEGRAM_CHAT_ID (backward compatibility)
+        chat_ids = [chat_id_single]
+    
+    if bot_token and chat_ids:
+        logger.info(f"Loading configuration from environment variables for {len(chat_ids)} recipient(s)")
         config = {
             "telegram": {
                 "bot_token": bot_token,
-                "chat_id": chat_id
+                "chat_ids": chat_ids
             },
             "settings": {
                 "check_interval_minutes": int(check_interval),
@@ -353,6 +372,16 @@ def load_config() -> Dict[str, Any]:
             logger.info("Loading configuration from config.json")
             with open('config.json', 'r') as f:
                 config = json.load(f)
+                
+            # Convert single chat_id to list for backward compatibility
+            telegram_config = config.get('telegram', {})
+            if 'chat_id' in telegram_config and 'chat_ids' not in telegram_config:
+                telegram_config['chat_ids'] = [telegram_config['chat_id']]
+            elif 'chat_ids' in telegram_config:
+                # Ensure chat_ids is a list
+                if isinstance(telegram_config['chat_ids'], str):
+                    telegram_config['chat_ids'] = [telegram_config['chat_ids']]
+                    
         except FileNotFoundError:
             logger.error("No configuration found. Set environment variables or create config.json")
             return {}
@@ -377,14 +406,18 @@ def main():
     # Validate required configuration
     telegram_config = config.get('telegram', {})
     bot_token = telegram_config.get('bot_token')
-    chat_id = telegram_config.get('chat_id')
+    chat_ids = telegram_config.get('chat_ids', [])
     
-    if not bot_token or not chat_id:
+    # Backward compatibility with single chat_id
+    if not chat_ids and telegram_config.get('chat_id'):
+        chat_ids = [telegram_config.get('chat_id')]
+    
+    if not bot_token or not chat_ids:
         logger.error("❌ Missing Telegram credentials")
         return
     
     # Initialize components
-    telegram_bot = TelegramBot(bot_token, chat_id)
+    telegram_bot = TelegramBot(bot_token, chat_ids)
     checker = CrousChecker(telegram_bot)
     
     # Get settings
@@ -392,6 +425,7 @@ def main():
     check_interval = settings.get('check_interval_minutes', 5)
     
     logger.info(f"✅ Bot initialized successfully!")
+    logger.info(f"👥 Recipients: {len(chat_ids)} user(s)")
     logger.info(f"⏰ Check interval: {check_interval} minutes")
     logger.info(f"🎮 Simulation mode: OFF")
     logger.info("=" * 50)
@@ -400,6 +434,7 @@ def main():
     startup_message = f"""
 🤖 <b>CROUS Checker Started on Render!</b>
 
+👥 Notifying: {len(chat_ids)} user(s)
 ⏰ Check interval: {check_interval} minutes
 🎯 Monitoring: Rennes area only
 📅 Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}

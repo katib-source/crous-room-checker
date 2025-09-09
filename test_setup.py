@@ -19,17 +19,31 @@ def test_config():
         
         telegram_config = config.get('telegram', {})
         bot_token = telegram_config.get('bot_token')
-        chat_id = telegram_config.get('chat_id')
+        
+        # Handle both single chat_id and multiple chat_ids
+        chat_ids = telegram_config.get('chat_ids', [])
+        chat_id_single = telegram_config.get('chat_id')
         
         if not bot_token or bot_token == "YOUR_BOT_TOKEN_HERE":
             print("❌ Bot token not configured in config.json")
-            return False
+            return False, None
         
-        if not chat_id or chat_id == "YOUR_CHAT_ID_HERE":
-            print("❌ Chat ID not configured in config.json")
-            return False
+        # Check if we have at least one chat ID
+        if not chat_ids and not chat_id_single:
+            print("❌ No chat IDs configured in config.json")
+            return False, None
         
-        print("✅ Configuration file is valid")
+        if chat_ids and any(id == "YOUR_CHAT_ID_HERE" for id in chat_ids):
+            print("❌ Default chat ID placeholder found in config.json")
+            return False, None
+        
+        if chat_id_single == "YOUR_CHAT_ID_HERE":
+            print("❌ Default chat ID placeholder found in config.json")
+            return False, None
+        
+        # Count total recipients
+        total_recipients = len(chat_ids) if chat_ids else (1 if chat_id_single else 0)
+        print(f"✅ Configuration file is valid ({total_recipients} recipient(s))")
         return True, config
         
     except FileNotFoundError:
@@ -39,8 +53,8 @@ def test_config():
         print(f"❌ Invalid JSON in config.json: {e}")
         return False, None
 
-def test_telegram_bot(bot_token, chat_id):
-    """Test Telegram bot connectivity"""
+def test_telegram_bot(bot_token, chat_ids):
+    """Test Telegram bot connectivity with multiple users"""
     print("🤖 Testing Telegram bot...")
     
     try:
@@ -57,25 +71,47 @@ def test_telegram_bot(bot_token, chat_id):
             print("❌ Invalid bot token")
             return False
         
-        # Test sending a message
-        test_message = f"🧪 Test message from CROUS Checker\nTime: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        # Ensure chat_ids is a list
+        if isinstance(chat_ids, str):
+            chat_ids = [chat_ids]
         
-        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-        payload = {
-            'chat_id': chat_id,
-            'text': test_message
-        }
+        print(f"🧪 Testing message delivery to {len(chat_ids)} recipient(s)...")
         
-        response = requests.post(url, json=payload, timeout=10)
-        response.raise_for_status()
+        # Test sending messages to all chat IDs
+        success_count = 0
+        for i, chat_id in enumerate(chat_ids, 1):
+            test_message = f"🧪 Test message {i}/{len(chat_ids)} from CROUS Checker\nTime: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\nRecipient: {chat_id}"
+            
+            url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+            payload = {
+                'chat_id': chat_id,
+                'text': test_message
+            }
+            
+            try:
+                response = requests.post(url, json=payload, timeout=10)
+                response.raise_for_status()
+                
+                result = response.json()
+                if result.get('ok'):
+                    print(f"✅ Test message sent successfully to {chat_id}")
+                    success_count += 1
+                else:
+                    print(f"❌ Failed to send message to {chat_id}: {result.get('description', 'Unknown error')}")
+                    
+            except requests.exceptions.RequestException as e:
+                print(f"❌ Network error sending to {chat_id}: {e}")
         
-        result = response.json()
-        if result.get('ok'):
-            print("✅ Test message sent successfully!")
-            print("📱 Check your Telegram to confirm you received the test message.")
+        if success_count == len(chat_ids):
+            print(f"🎉 All {success_count} messages sent successfully!")
+            print("📱 Check Telegram to confirm you received the test messages.")
+            return True
+        elif success_count > 0:
+            print(f"⚠️ Partial success: {success_count}/{len(chat_ids)} messages sent")
+            print("📱 Check which recipients received messages and verify their chat IDs")
             return True
         else:
-            print(f"❌ Failed to send message: {result.get('description', 'Unknown error')}")
+            print("❌ Failed to send messages to any recipients")
             return False
             
     except requests.exceptions.RequestException as e:
@@ -134,9 +170,13 @@ def main():
     if config_valid and config:
         telegram_config = config.get('telegram', {})
         bot_token = telegram_config.get('bot_token')
-        chat_id = telegram_config.get('chat_id')
         
-        if not test_telegram_bot(bot_token, chat_id):
+        # Handle both single chat_id and multiple chat_ids
+        chat_ids = telegram_config.get('chat_ids', [])
+        if not chat_ids and telegram_config.get('chat_id'):
+            chat_ids = [telegram_config.get('chat_id')]
+        
+        if not test_telegram_bot(bot_token, chat_ids):
             all_tests_passed = False
     
     print()
