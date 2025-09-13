@@ -66,8 +66,8 @@ class CrousChecker:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         })
         
-        # CROUS URL for Rennes area with geographic bounds
-        self.crous_url = "https://trouverunlogement.lescrous.fr/tools/41/search?bounds=-1.7525876_48.1549705_-1.6244045_48.0769155"
+        # CROUS URL for Nice area with geographic bounds
+        self.crous_url = "https://trouverunlogement.lescrous.fr/tools/41/search?bounds=7.1819535_43.7607635_7.323912_43.6454189"
         
         # Track previously found rooms to avoid duplicate notifications
         self.previous_rooms = set()
@@ -106,11 +106,11 @@ class CrousChecker:
     
     def check_availability_real(self) -> Dict[str, Any]:
         """
-        Real CROUS website scraping for Rennes accommodation
+        Real CROUS website scraping for Nice accommodation
         Scrapes https://trouverunlogement.lescrous.fr/tools/41/search
         """
         try:
-            logger.info("Checking CROUS Rennes website...")
+            logger.info("Checking CROUS Nice website...")
             response = self.session.get(self.crous_url, timeout=15)
             response.raise_for_status()
             
